@@ -25,10 +25,10 @@ class GrassDataset(BaseSegDataset):
         │   │   │   │   ├──...
         │   │   ├── ann_dir
         │   │   │   ├── train
-        │   │   │   │   ├──0.tif
+        │   │   │   │   ├──0.png
         │   │   │   │   ├──...
         │   │   │   ├── val
-        │   │   │   │   ├──9.tif
+        │   │   │   │   ├──9.png
         │   │   │   │   ├──...
     """
 
