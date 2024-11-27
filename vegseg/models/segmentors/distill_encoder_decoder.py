@@ -84,10 +84,12 @@ class DistillEncoderDecoder(BaseSegmentor):
         neck: OptConfigType = None,
         auxiliary_head: OptConfigType = None,
         student_adapter: OptConfigType = None,
+        veg_adapter: OptConfigType = None,
         train_cfg: OptConfigType = None,
         test_cfg: OptConfigType = None,
         data_preprocessor: OptConfigType = None,
         pretrained: Optional[str] = None,
+        student_training=True,
         temperature=1.0,
         alpha=0.5,
         init_cfg: OptMultiConfig = None,
@@ -96,6 +98,7 @@ class DistillEncoderDecoder(BaseSegmentor):
 
         self.temperature = temperature
         self.alpha = alpha
+        self.student_training = student_training
 
         if pretrained is not None:
             assert (
@@ -112,8 +115,11 @@ class DistillEncoderDecoder(BaseSegmentor):
             self.neck = MODELS.build(neck)
 
         self.student_adapter = nn.Identity()
+        self.veg_adapter = nn.Identity()
         if student_adapter is not None:
             self.student_adapter = MODELS.build(student_adapter)
+        if veg_adapter is not None:
+            self.veg_adapter = MODELS.build(veg_adapter)
         self._init_decode_head(decode_head)
         self._init_auxiliary_head(auxiliary_head)
 
@@ -145,6 +151,7 @@ class DistillEncoderDecoder(BaseSegmentor):
         x = self.student_adapter(x)
         if self.with_neck:
             x = self.neck(x)
+        x = self.veg_adapter(x)
         return x
 
     def encode_decode(self, inputs: Tensor, batch_img_metas: List[dict]) -> Tensor:
@@ -219,7 +226,8 @@ class DistillEncoderDecoder(BaseSegmentor):
 
         loss_decode = self._decode_head_forward_train(x, data_samples)
         losses.update(loss_decode)
-        losses["distill_loss"] = self.calculate_diltill_loss(inputs)
+        if self.student_training:
+            losses["distill_loss"] = self.calculate_diltill_loss(inputs)
         if self.with_auxiliary_head:
             loss_aux = self._auxiliary_head_forward_train(x, data_samples)
             losses.update(loss_aux)
