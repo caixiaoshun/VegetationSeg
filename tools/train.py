@@ -9,7 +9,7 @@ from mmengine.logging import print_log
 from mmengine.runner import Runner
 
 from mmseg.registry import RUNNERS
-
+from vegseg import models
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a segmentor')
