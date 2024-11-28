@@ -223,6 +223,8 @@ class DistillEncoderDecoder(BaseSegmentor):
             total_loss += loss
 
         avg_loss = total_loss / len(student_feats)
+        if self.alpha == 0:
+            avg_loss = avg_loss * 0.5
         return avg_loss
 
     def loss(self, inputs: Tensor, data_samples: SampleList) -> dict:
