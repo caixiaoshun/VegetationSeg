@@ -36,18 +36,24 @@ class Mlp(nn.Module):
 
 @MODELS.register_module()
 class VegAdapter(BaseModule):
-    def __init__(self, in_channels, rank_dim=4, init_cfg=None):
+    def __init__(self, in_channels, rank_dim=4, mlp_nums=1, init_cfg=None):
         super().__init__(init_cfg)
         self.adapters = nn.ModuleList()
 
         for in_channel in in_channels:
-            self.adapters.append(
-                Mlp(
-                    in_channel,
-                    hidden_features=in_channel // rank_dim,
-                    out_features=in_channel,
+            mlp_list = []
+            for _ in range(mlp_nums):
+                mlp_list.append(
+                    Mlp(
+                        in_channel,
+                        hidden_features=in_channel // rank_dim,
+                        out_features=in_channel,
+                    )
                 )
+            mlp_model = nn.Sequential(
+                *mlp_list
             )
+            self.adapters.append(mlp_model)
 
         self.apply(self._init_weights)
 

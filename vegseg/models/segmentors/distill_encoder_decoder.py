@@ -92,6 +92,7 @@ class DistillEncoderDecoder(BaseSegmentor):
         student_training=True,
         temperature=1.0,
         alpha=0.5,
+        fuse=False,
         init_cfg: OptMultiConfig = None,
     ):
         super().__init__(data_preprocessor=data_preprocessor, init_cfg=init_cfg)
@@ -99,6 +100,7 @@ class DistillEncoderDecoder(BaseSegmentor):
         self.temperature = temperature
         self.alpha = alpha
         self.student_training = student_training
+        self.fuse = fuse
 
         if pretrained is not None:
             assert (
@@ -145,10 +147,21 @@ class DistillEncoderDecoder(BaseSegmentor):
             else:
                 self.auxiliary_head = MODELS.build(auxiliary_head)
 
+    def fuse_features(self,features):
+        x = features[0]
+        for index,feature in enumerate(features):
+            if index == 0:
+                continue
+            x += feature
+        x = [x]
+        return tuple(x)
+
     def extract_feat(self, inputs: Tensor) -> List[Tensor]:
         """Extract features from images."""
         x = self.backbone(inputs)
         x = self.student_adapter(x)
+        if self.fuse:
+            x = self.fuse_features(x)
         if self.with_neck:
             x = self.neck(x)
         x = self.veg_adapter(x)
@@ -193,6 +206,11 @@ class DistillEncoderDecoder(BaseSegmentor):
         student_feats = self.backbone(inputs)
         student_feats = self.student_adapter(student_feats)
         teach_feats = self.teach_backbone(inputs)
+
+        if self.fuse:
+            student_feats = self.fuse_features(student_feats)
+            teach_feats = self.fuse_features(teach_feats)
+
         total_loss = 0.0
         for student_feat, teach_feat in zip(student_feats, teach_feats):
             student_prob = F.softmax(student_feat / self.temperature, dim=-1)
