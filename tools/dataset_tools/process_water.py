@@ -26,7 +26,7 @@ classes_mapping = {
     "CDUWD-5": 5,
     "CDUWD-6": 0,
 }
-all_images = glob("data/raw_water_dataset/512/CDUWD-6/images/*.png")
+all_images = glob("data/raw_water_dataset/512/*/images/*.png")
 
 all_labels = [image_path.replace("images", "labels") for image_path in all_images]
 
@@ -36,7 +36,7 @@ target_label_dir = "data/raw_water_dataset/all_dataset/labels/"
 os.makedirs(target_image_dir, exist_ok=True)
 os.makedirs(target_label_dir, exist_ok=True)
 
-for image_path, label_path in zip(all_images, all_labels):
+for image_path, label_path in track(zip(all_images, all_labels),total=len(all_images)):
     exists_images = glob("data/raw_water_dataset/all_dataset/images/*.png")
 
     base_name = os.path.basename(image_path)
@@ -53,6 +53,8 @@ for image_path, label_path in zip(all_images, all_labels):
         classes_str = image_path.split(os.path.sep)[-3]
         classes = classes_mapping[classes_str]
         mask = np.where(mask == 1, classes, mask)
+
+        # print(classes_str)
 
         mask = Image.fromarray(mask)
         mask.save(os.path.join(target_label_dir, base_name))
@@ -76,6 +78,10 @@ for image_path, label_path in zip(all_images, all_labels):
 
         exists_mask = Image.fromarray(exists_mask)
         exists_mask.save(exists_label_path)
+
+        # print(classes_str)
+    
+    # print(np.unique(mask))
 
 print("process done.")
 
