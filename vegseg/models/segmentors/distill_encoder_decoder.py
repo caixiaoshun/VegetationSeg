@@ -195,6 +195,8 @@ class DistillEncoderDecoder(BaseSegmentor):
         if isinstance(self.auxiliary_head, nn.ModuleList):
             for idx, aux_head in enumerate(self.auxiliary_head):
                 loss_aux = aux_head.loss(inputs, data_samples, self.train_cfg)
+                for key in loss_aux.keys():
+                    loss_aux[key] = loss_aux[key] / len(self.auxiliary_head)
                 losses.update(add_prefix(loss_aux, f"aux_{idx}"))
         else:
             loss_aux = self.auxiliary_head.loss(inputs, data_samples, self.train_cfg)
