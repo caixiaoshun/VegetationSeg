@@ -1,6 +1,6 @@
 _base_ = [
     "../_base_/models/vegseg.py",
-    "../_base_/datasets/l8_biome.py",
+    "../_base_/datasets/cloudsen12_high_l1c.py",
     "../_base_/default_runtime.py",
     "../_base_/schedules/other_dataset_scedule.py",
 ]
