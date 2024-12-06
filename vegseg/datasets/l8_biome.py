@@ -7,10 +7,10 @@ class L8BIOMEDataset(BaseSegDataset):
     METAINFO = dict(
         classes=("Clear", "Cloud Shadow", "Thin Cloud", "Cloud"),
         palette=[
-            [0, 0, 0],
-            [85, 85, 85],
-            [170, 170, 170],
-            [255, 255, 255],
+            [79, 253, 199],
+            [221, 53, 223],
+            [251, 255, 41],
+            [77, 2, 115],
         ],
     )
 
